@@ -2,6 +2,9 @@
 
 surveys <- read.csv("data/portal_data_joined.csv")
 
+
+# Playing with pipes ----
+
 install.packages("tidyverse")
 library(tidyverse)
 
@@ -50,7 +53,7 @@ surveys %>%
   group_by(sex,species_id) %>%
   tally
 
-# Challenge
+## Challenge
 
 # 1. How many individuals were caught in each plot_type surveyed?
 
@@ -93,4 +96,36 @@ surveys %>%
   group_by(sex) %>%
   summarise(n())
 
+## Exporting data ----
 
+# this works, but is a bit long and redundant
+surveys_clean <- surveys %>%
+  filter(species_id != "",) %>%   # remove missing species_id
+  filter(!is.na(weight)) %>%
+  filter(!is.na(hindfoot_length)) %>%
+  filter(sex != "")
+
+# this is a cleaner way to do it
+surveys_clean <- surveys %>%
+  filter(species_id != "",
+         !is.na(weight),
+         !is.na(hindfoot_length), 
+         sex != "")
+
+# find the common species
+species_counts <- surveys_clean %>%
+  group_by(species_id) %>%
+  tally %>%
+  filter(n >=50)
+ 
+# only keep the common species in surveys_clean
+surveys_common <- surveys_clean %>%
+  filter(species_id %in% species_counts$species_id)
+
+dir.create("data/clean")  
+write.csv(surveys_common, file="data/clean/surveys_common.csv")
+
+
+  
+  
+  
