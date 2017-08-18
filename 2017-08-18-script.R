@@ -126,6 +126,65 @@ dir.create("data/clean")
 write.csv(surveys_common, file="data/clean/surveys_common.csv")
 
 
+## Data visualization: Learn how to plot your data ----
+library(tidyverse)
+surveys_common <- read.csv("data/clean/surveys_common.csv")
   
+# ggplot2
+ggplot(data=surveys_common, aes(x = weight, y = hindfoot_length)) +
+  geom_point(alpha = 0.2, aes(color = species_id))
+
+ggplot(data=surveys_common, aes(x = species_id, y = weight)) +
+  geom_point(alpha = 0.2, aes(color = plot_type))
+
+# boxplot instead of scatter
+ggplot(data=surveys_common, aes(x = species_id, y = weight)) +
+  geom_boxplot(aes(color = plot_type)) +
+  facet_grid(sex ~ .) +
+  labs(x="Species",
+       y="Weight (g)",
+       title="Portal Rodents")
+
+# time series 
+
+yearly_counts <- surveys_common %>%
+  group_by(year, species_id) %>%
+  tally
+
+ggplot(yearly_counts, aes( x= year , y= n)) +
+  geom_line(aes(color = species_id)) +
+  facet_wrap(~ species_id)
+
+# what you set in the original brackets are global options that are going to be used by everything that comes after
+ 
+yearly_sex_counts <- surveys_common %>%
+  group_by(year, species_id, sex) %>%
+  tally 
+
+ggplot(yearly_sex_counts, aes( x= year , y= n, color=sex)) +
+  geom_line() +
+  facet_wrap(~ species_id)
+
+# Challenge
+## Use what you just learned to create a plot that
+## depicts how the average weight of each species
+## changes through the years.
+
+yearly_average_weight <- surveys_common %>% 
+  group_by(year, species_id) %>% 
+  summarize(mean_weight = mean(weight, na.rm=T))
+
+my_plot <- ggplot(yearly_average_weight, aes(x=year, 
+                                  y=mean_weight, 
+                                  color=species_id))+
+  geom_line() +
+  facet_wrap(~species_id)+
+  labs(x = "Year", y="Mean weight (g)") +
+  theme_bw()+
+  theme(axis.text.x = element_text(angle=45,
+                                   color="red",
+                                   size=7),
+        legend.position = "none")
   
+ggsave("my_plot.png", my_plot)
   
